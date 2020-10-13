@@ -101,30 +101,33 @@ __webpack_require__.r(__webpack_exports__);
             id: 1,
             name: "Пафнутий",
             surname: "Пафнутьев",
-            department: "IT"
+            department: "IT",
+            salary: 1000
         },
         {
             id: 2,
             name: "Алексей",
             surname: "Новожилов",
-            department: "Продажи"
+            department: "Продажи",
+            salary: 999
         },
         {
             id: 4,
             name: "Sergey",
             surname: "Petrov",
-            department: "IT"
+            department: "IT",
+            salary: 998
         },
         {
             id: 5,
             name: "Алексей",
             surname: "Petrov",
-            department: "Продажи"
+            department: "Продажи",
+            salary: 997
         }
 
     ]
 }); 
-
 //console.log(DATA.employees);
 
 
@@ -591,10 +594,47 @@ __webpack_require__.r(__webpack_exports__);
 
 window.Employee = _model_employee__WEBPACK_IMPORTED_MODULE_2__["Employee"];
 
+let html = "";
+function render() {
+    document.getElementById("employees").innerHTML = html;
+}
+
 window.addEmployeeUI = _employees_ui_all__WEBPACK_IMPORTED_MODULE_0__["addEmployeeUI"];
 window.openTab = _employees_ui_all__WEBPACK_IMPORTED_MODULE_0__["openTab"];
 window.searchEmployeeUI = _employees_ui_all__WEBPACK_IMPORTED_MODULE_0__["searchEmployeeUI"];
 Object(_employees_ui_all__WEBPACK_IMPORTED_MODULE_0__["runUI"])();
+render();
+
+let et = allEmployees();
+let employees = Object(_model_employee__WEBPACK_IMPORTED_MODULE_2__["jsonToEmployees"])(et);
+/*
+for (let e of employees) {
+    e.total()
+        .then(total=>
+            html += `${e.name} total: ${total} <br>`)
+        .catch(bonus=>
+            html += `${e.name} bonus is too big 
+                (${bonus}!) <br>`)
+        .then(render)
+
+}
+*/
+async function printBonus() {
+    html += "<br>Async/await version:<br>";
+    for (let e of employees) {
+        let bonus=0;
+        try {
+            bonus = await e.bonus();
+            html += `${e.name} bonus: ${bonus} 
+              total: ${e.salary + bonus}<br>`;
+        } catch (ex) {
+            html += `${e.name} bonus is too big 
+            (${ex}!) <br>`;
+        }
+        render();
+    }
+}
+printBonus();
 
 
 /***/ }),
@@ -623,6 +663,20 @@ class Employee extends _person__WEBPACK_IMPORTED_MODULE_0__["Person"] {
         return Object.assign(new Employee(), obj)
     }
 
+    bonus() {
+        var bonus = Math.round(Math.random() * 1000);
+        return new Promise((resolve, reject) =>
+            setTimeout(() => bonus < 700 ? resolve(bonus) : reject(bonus), 1000))
+    }
+
+    total() {
+        return new Promise((resolve, reject) =>
+            this.bonus()
+                .then(bonus => resolve(bonus + this.salary))
+                .catch(bonus=> reject(bonus))
+        )
+    }
+
 }
 
 function jsonToEmployees(employeesJSON) {
@@ -634,7 +688,7 @@ function jsonToEmployees(employeesJSON) {
 }
 
 
-window.allEmployees = function() {
+window.allEmployees = function () {
     return jsonToEmployees(Object(_employees_service__WEBPACK_IMPORTED_MODULE_1__["getAllEmployees"])());
 }
 
